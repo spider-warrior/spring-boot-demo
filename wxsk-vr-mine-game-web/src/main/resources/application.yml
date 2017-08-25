@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: mine-game
+  profiles:
+    active: #package.environment#
+server:
+  port: 6103
+
