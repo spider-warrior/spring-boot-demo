@@ -1,7 +1,8 @@
 package com.wxsk.vr.mine.controller.response.wrapper;
 
-import com.wxsk.vr.mine.common.constant.enums.LandAwardType;
+import com.wxsk.vr.mine.common.constant.enums.LandAreaAwardTypeValue;
 import com.wxsk.vr.mine.controller.response.vo.LandAreaHarvestVo;
+import com.wxsk.vr.mine.controller.response.vo.constants.VoType;
 import com.wxsk.vr.mine.model.AwardType;
 import com.wxsk.vr.mine.model.LandArea;
 import org.apache.logging.log4j.LogManager;
@@ -37,10 +38,14 @@ public class LandAreaHarvestVoWrapper {
             }
             for (Map.Entry<Byte, Integer> entry: harvestMap.entrySet()) {
                 LandAreaHarvestVo areaHarvestVo = new LandAreaHarvestVo();
+                areaHarvestVo.setStructureType(VoType.HARVEST.getValue());
                 areaHarvestVo.setType(entry.getKey());
-                areaHarvestVo.setName(LandAwardType.getLandAwardType(entry.getKey()).name);
+                LandAreaAwardTypeValue landAreaAwardTypeValue = LandAreaAwardTypeValue.getLandAreaAwardTypeValue(entry.getKey());
+                if (landAreaAwardTypeValue != null) {
+                    areaHarvestVo.setName(landAreaAwardTypeValue.name);
+                }
                 //无限币
-                if (entry.getKey() == LandAwardType.VR_COIN.value) {
+                if (entry.getKey() == LandAreaAwardTypeValue.VR_COIN.value) {
                     BigDecimal bd = new BigDecimal(entry.getValue());
                     areaHarvestVo.setAmount(bd.divide(new BigDecimal(10), 1, RoundingMode.DOWN).doubleValue());
                 }
@@ -57,30 +62,32 @@ public class LandAreaHarvestVoWrapper {
     }
 
 
-    public List<LandAreaHarvestVo> buildLandAreaAward(Map<Byte, AwardType> landAreaAward) {
+    public List<LandAreaHarvestVo> buildLandAreaAward(Collection<AwardType> landAreaAward) {
         if (landAreaAward == null) {
             return Collections.emptyList();
         }
         List<LandAreaHarvestVo> landAreaHarvestVoList = new ArrayList<>();
-        for (AwardType awardType: landAreaAward.values()) {
+        for (AwardType awardType: landAreaAward) {
             if (awardType.getValue() != 0) {
                 LandAreaHarvestVo areaHarvestVo = new LandAreaHarvestVo();
+                areaHarvestVo.setStructureType(VoType.HARVEST.getValue());
                 areaHarvestVo.setType(awardType.getValue());
-                LandAwardType landAwardType = LandAwardType.getLandAwardType(awardType.getValue());
-                if (landAwardType!= null) {
-                    areaHarvestVo.setName(landAwardType.name);
+                LandAreaAwardTypeValue landAreaAwardTypeValue = LandAreaAwardTypeValue.getLandAreaAwardTypeValue(awardType.getValue());
+                if (landAreaAwardTypeValue != null) {
+                    areaHarvestVo.setName(landAreaAwardTypeValue.name);
                 }
                 else {
                     areaHarvestVo.setName(awardType.getName());
                 }
-                //无限币
-                if (awardType.getValue() == LandAwardType.VR_COIN.value) {
+                //宝箱 || 体力 || 经验
+                if(awardType.getValue() == LandAreaAwardTypeValue.MAGIC_BOX.value || awardType.getValue() == LandAreaAwardTypeValue.ENERGY.value || awardType.getValue() == LandAreaAwardTypeValue.EXP.value) {
+                    areaHarvestVo.setAmount((double)awardType.getAmount());
+                }
+                else {
                     BigDecimal bd = new BigDecimal(awardType.getAmount());
                     areaHarvestVo.setAmount(bd.divide(new BigDecimal(10), 1, RoundingMode.DOWN).doubleValue());
                 }
-                else {
-                    areaHarvestVo.setAmount((double)awardType.getAmount());
-                }
+
                 landAreaHarvestVoList.add(areaHarvestVo);
             }
         }

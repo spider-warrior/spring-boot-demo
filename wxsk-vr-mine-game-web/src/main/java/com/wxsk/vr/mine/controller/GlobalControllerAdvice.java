@@ -44,11 +44,10 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(Exception.class)
     public Object exception(Exception e) {
         if (e instanceof BusinessException) {
-            BusinessException businessException = (BusinessException)e;
+            BusinessException businessException = (BusinessException) e;
             logger.error("business exception, error code: {}, error msg: {}", businessException.getErrorCode(), businessException.getErrorMessage());
             return JSONResult.faild().setErrorCode(businessException.getErrorCode()).setMessage(businessException.getErrorMessage());
-        }
-        else {
+        } else {
             logger.error("runtime exception", e);
             return JSONResult.faild().setErrorCode("500");
         }

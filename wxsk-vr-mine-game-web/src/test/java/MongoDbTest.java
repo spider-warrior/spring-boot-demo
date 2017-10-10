@@ -11,10 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,7 +25,7 @@ public class MongoDbTest {
     private MongoTemplate mongoTemplate;
 
     @Test
-    public void testInsert(){
+    public void testInsert() {
         Student s = new Student();
         s.setName("xiaoming");
         s.setAge(18);
@@ -73,8 +70,7 @@ public class MongoDbTest {
         WriteResult result = mongoTemplate.updateFirst(query, update, Student.class);
         if (result.getN() == 0) {
             System.out.println("update 0");
-        }
-        else {
+        } else {
             Student student = mongoTemplate.findById(id, Student.class);
             System.out.println(student);
         }
@@ -122,7 +118,7 @@ public class MongoDbTest {
     public void testProjection() {
         Query query = new Query();
         query.fields().include("name").include("birthday");
-        List<String> strings = mongoTemplate.find(query, String.class,"student");
+        List<String> strings = mongoTemplate.find(query, String.class, "student");
         System.out.println(strings);
     }
 }

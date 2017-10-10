@@ -2,8 +2,8 @@ package com.wxsk.vr.mine.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 挖掘记录
@@ -12,29 +12,58 @@ import java.util.Set;
 public class DigRecord extends BaseModel {
 
     /**
-     * 结束时间
-     * */
-    private long endTime;
-    /**
-     * 挖掘总耗时
-     * */
-    private long totalDigTime;
+     * 用户ID
+     */
+    private Long userId;
 
     /**
+     * 开始时间
+     */
+    private long startTime;
+
+    /**
+     * 结束时间
+     */
+    private long endTime;
+
+    /**
+     * 地块开始下标
+     */
+    private int landAreaStartIndex;
+
+    /**
+     * 地块结束下标
+     */
+    private int landAreaEndIndex;
+    /**
      * 是否通知过
-     * */
+     */
     private boolean informed;
 
     /**
      * 涉及的地块页码
-     * */
+     */
     private List<Integer> pageIndex;
-
     /**
-     * 用户ID
-     * */
-    private Long userId;
+     * 未消费体力
+     */
+    private int remainEnergy;
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
 
     public long getEndTime() {
         return endTime;
@@ -44,12 +73,20 @@ public class DigRecord extends BaseModel {
         this.endTime = endTime;
     }
 
-    public long getTotalDigTime() {
-        return totalDigTime;
+    public int getLandAreaStartIndex() {
+        return landAreaStartIndex;
     }
 
-    public void setTotalDigTime(long totalDigTime) {
-        this.totalDigTime = totalDigTime;
+    public void setLandAreaStartIndex(int landAreaStartIndex) {
+        this.landAreaStartIndex = landAreaStartIndex;
+    }
+
+    public int getLandAreaEndIndex() {
+        return landAreaEndIndex;
+    }
+
+    public void setLandAreaEndIndex(int landAreaEndIndex) {
+        this.landAreaEndIndex = landAreaEndIndex;
     }
 
     public boolean isInformed() {
@@ -68,11 +105,32 @@ public class DigRecord extends BaseModel {
         this.pageIndex = pageIndex;
     }
 
-    public Long getUserId() {
-        return userId;
+    public int getRemainEnergy() {
+        return remainEnergy;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setRemainEnergy(int remainEnergy) {
+        this.remainEnergy = remainEnergy;
+    }
+
+    public void addPageIndex(int index) {
+        if (pageIndex == null) {
+            pageIndex = new ArrayList<>();
+        }
+        if (!pageIndex.contains(index)) {
+            pageIndex.add(index);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "DigRecord{" +
+                "userId=" + userId +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", informed=" + informed +
+                ", pageIndex=" + pageIndex +
+                ", remainEnergy=" + remainEnergy +
+                '}';
     }
 }

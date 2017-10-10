@@ -1,13 +1,9 @@
 package com.wxsk.vr.mine.service.impl;
 
 import com.mongodb.WriteResult;
-import com.wxsk.vr.mine.common.util.AppReflectUtil;
+import com.wxsk.vr.mine.dao.BaseDao;
 import com.wxsk.vr.mine.service.BaseService;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
@@ -16,42 +12,44 @@ import java.util.List;
  */
 public abstract class BaseServiceImpl<T> implements BaseService<T> {
 
-    protected final Class<T> clazz;
-
-    @Autowired
-    protected MongoTemplate mongoTemplate;
-
     @Override
     public void insert(T t) {
-        mongoTemplate.insert(t);
+        getBaseDao().insert(t);
     }
 
     @Override
-    public void save(T t) {
-        mongoTemplate.save(t);
+    public boolean update(T t) {
+        WriteResult writeResult = getBaseDao().update(t);
+        return writeResult.getN() > 0;
     }
 
     @Override
-    public WriteResult remove(T t) {
-        return mongoTemplate.remove(t);
-    }
-
-    @Override
-    public WriteResult updateFirst(Query query, Update update) {
-        return mongoTemplate.updateFirst(query, update, clazz);
+    public boolean remove(T t) {
+        WriteResult writeResult = getBaseDao().remove(t);
+        return writeResult.getN() > 0;
     }
 
     @Override
     public T queryById(ObjectId id) {
-        return mongoTemplate.findById(id, clazz);
+        return getBaseDao().queryById(id);
     }
 
     @Override
-    public List<T> queryByParam(Query query) {
-        return mongoTemplate.find(query, clazz);
+    public long countByParam(BaseDao.BaseParam param) {
+        return getBaseDao().countByParam(param);
     }
 
-    public BaseServiceImpl() {
-        clazz = AppReflectUtil.findTypeParam(this, BaseServiceImpl.class, "T");
+    @Override
+    public List<T> queryByParam(BaseDao.BaseParam param) {
+        return getBaseDao().queryByParam(param);
     }
+
+    @Override
+    public void deleteByParam(BaseDao.BaseParam param) {
+        getBaseDao().deleteByParam(param);
+    }
+
+    public BaseServiceImpl() {}
+
+    public abstract BaseDao<T> getBaseDao();
 }

@@ -44,7 +44,8 @@ public class AppContext {
      * 获取当前线程系统时间
      */
     public static Date getCurrentRequestTimePoint() {
-        return requestTimePoint.get();
+        Date now = requestTimePoint.get();
+        return now == null ? new Date() : now;
     }
 
     /**
@@ -54,10 +55,11 @@ public class AppContext {
         requestTimePoint.remove();
     }
 
-    public static void initRequestContext(User user, Date now)  {
+    public static void initRequestContext(User user, Date now) {
         setCurrentUser(user);
         setCurrentRequestTimePoint(now);
     }
+
     public static void clearRequestContext() {
         removeCurrentUser();
         removeCurrentRequestTimePoint();

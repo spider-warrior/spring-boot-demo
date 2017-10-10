@@ -1,10 +1,7 @@
 package com.wxsk.vr.mine.service;
 
-import com.mongodb.WriteResult;
+import com.wxsk.vr.mine.dao.BaseDao;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
@@ -15,96 +12,52 @@ public interface BaseService<T> {
 
     /**
      * insert
-     * */
+     */
     void insert(T t);
 
     /**
-     * save
-     * */
-    void save(T t);
+     * update
+     * @return 是否更新成功
+     */
+    boolean update(T t);
 
     /**
      * remove
-     * */
-    WriteResult remove(T t);
-
-    /**
-     * update first
-     * */
-    WriteResult updateFirst(Query query, Update update);
+     * @return 是否删除成功
+     */
+    boolean remove(T t);
 
     /**
      * query by id
-     * */
+     */
     T queryById(ObjectId id);
 
     /**
-     * query by param
+     * count by param
      * */
-    List<T> queryByParam(Query query);
+    long countByParam(BaseDao.BaseParam param);
 
+    /**
+     * query by param
+     */
+    List<T> queryByParam(BaseDao.BaseParam param);
 
-    abstract class BaseParam {
+    /**
+     * delete by param
+     * */
+    void deleteByParam(BaseDao.BaseParam param);
 
-        /**
-         * id
-         * */
-        protected ObjectId id;
+    abstract class MethodInvodeResult {
 
-        /**
-         * skip
-         * */
-        protected int skip;
+        protected boolean success;
 
-        /**
-         * limit
-         * */
-        protected int limit;
-
-        public ObjectId getId() {
-            return id;
+        public boolean isSuccess() {
+            return success;
         }
 
-        public BaseParam setId(ObjectId id) {
-            this.id = id;
-            return this;
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
-
-        public int getSkip() {
-            return skip;
-        }
-
-        public BaseParam setSkip(int skip) {
-            this.skip = skip;
-            return this;
-        }
-
-        public int getLimit() {
-            return limit;
-        }
-
-        public BaseParam setLimit(int limit) {
-            this.limit = limit;
-            return this;
-        }
-
-        public Query buildQuery() {
-            Query query = new Query();
-            Criteria criteria = new Criteria();
-            query.addCriteria(criteria);
-            if (id != null) {
-                criteria.and("_id").is(id);
-            }
-            buildSubCriteria(criteria);
-            if (skip > 0) {
-                query.skip(skip);
-            }
-            if (limit > 0) {
-                query.limit(limit);
-            }
-            return query;
-        }
-        abstract void buildSubCriteria(final Criteria criteria);
     }
 
 }

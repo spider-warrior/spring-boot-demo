@@ -6,36 +6,41 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 地块类型
  */
 @Document
-public class LandAreaType implements Cloneable{
+public class LandAreaType extends BaseModel implements Cloneable {
 
     /**
      * 大类
-     * */
+     */
     private byte type;
 
     /**
      * 小类
-     * */
+     */
     private int subType;
 
     /**
      * 地块名称
-     * */
+     */
     private String name;
 
     /**
      * 挖掘时间
-     * */
+     */
     private int spendTimeInSecond;
 
     /**
      * 消耗体力
-     * */
+     */
     private int consumeEnergy;
 
     /**
-     * 奖励类型
+     * 经验
      * */
+    private int exp;
+
+    /**
+     * 奖励类型
+     */
     private AwardType awardType;
 
 
@@ -79,6 +84,14 @@ public class LandAreaType implements Cloneable{
         this.consumeEnergy = consumeEnergy;
     }
 
+    public int getExp() {
+        return exp;
+    }
+
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
+
     public AwardType getAwardType() {
         return awardType;
     }
@@ -95,12 +108,12 @@ public class LandAreaType implements Cloneable{
     @Override
     public String toString() {
         return "LandAreaType{" +
-                "type=" + type +
-                ", subType=" + subType +
-                ", name='" + name + '\'' +
-                ", spendTimeInSecond=" + spendTimeInSecond +
-                ", consumeEnergy=" + consumeEnergy +
-                ", awardType=" + awardType +
-                '}';
+            "type=" + type +
+            ", subType=" + subType +
+            ", name='" + name + '\'' +
+            ", spendTimeInSecond=" + spendTimeInSecond +
+            ", consumeEnergy=" + consumeEnergy +
+            ", awardType=" + awardType +
+            '}';
     }
 }

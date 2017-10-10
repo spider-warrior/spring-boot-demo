@@ -1,4 +1,5 @@
 import com.wxsk.vr.mine.MineGame;
+import com.wxsk.vr.mine.dao.UserGameDataDao;
 import com.wxsk.vr.mine.service.UserGameDataService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +18,7 @@ public class UserGameDataServiceTest {
 
     @Test
     public void testQueryUserGameDataByParam() {
-        UserGameDataService.UserGameDataParam userGameDataParam = new UserGameDataService.UserGameDataParam();
+        UserGameDataDao.UserGameDataParam userGameDataParam = new UserGameDataDao.UserGameDataParam();
 //        userGameDataParam.setId(new ObjectId("5982d3d5106cf25c08cdf51e"));
 //        userGameDataParam.setSkip(8);
 //        userGameDataParam.setLimit(1);

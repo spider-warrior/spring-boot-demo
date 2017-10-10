@@ -10,59 +10,44 @@ import com.wxsk.vr.mine.model.PageLandArea;
 public interface PageLandAreaService extends BaseService<PageLandArea> {
 
     /**
-     * 随机地块
-     * @param size list size
-     * @param count 刷新次数
-     * */
-    PageLandArea randomLandArea(int size, int count);
-
-    /**
-     * 查询当前矿区状态
-     * @param user 用户数据
-     * */
-    PageLandArea queryCurrentLandArea(User user) throws BusinessException;
-
-    /**
-     * 查询下一矿区状态
-     * @param user 用户数据
-     * */
-    PageLandArea queryNextLandArea(User user);
-
-    /**
-     * 计算矿区占用的体力(已消耗的体力)
-     * @param pageLandArea 矿区
-     * @return 体力
-     * */
-    Integer sumContainEnergyOfPageLandArea(PageLandArea pageLandArea);
-    
-
-    /**
-     * 矿区内以挂机的最后一块的结束时间
-     * @param pageLandArea
-     * @return 
+     * 初始化用户地块数据
      */
-    Long lastTimeOfPageLandArea(PageLandArea pageLandArea);
+    PageLandArea generateUserPageLandArea(Long userId, int index) throws BusinessException;
+
+    /**
+     * 查询用户当前页地块
+     */
+    PageLandArea queryUserCurrentPageLandArea(User user, long now) throws BusinessException;
+
+    /**
+     * 同步地块数据
+     */
+    void synchronizedPageLandArea(User user, long now) throws BusinessException;
 
     /**
      * 根据页码查询用户地块
-     * @param userId 用户Id
-     * @param index 页面下标
-     * */
-    PageLandArea queryUserPageLandAreaByIndex(long userId, int index);
+     *
+     * @param user 用户
+     * @param index  页面下标
+     */
+    PageLandArea queryUserPageLandAreaByIndex(User user, int index) throws BusinessException;
+
+    /**
+     * 随机地块
+     *
+     * @param size  list size
+     * @param count 刷新次数
+     */
+    PageLandArea randomLandArea(int size, int count) throws BusinessException;
 
     /**
      * 更新PageLandArea
-     * */
+     */
     void updatePageLandArea(PageLandArea pageLandArea);
 
     /**
      * 清理用户PageLandArea
-     * */
+     */
     void removeUserPageLandArea(User user);
-
-    /**
-     * 检查地块是否已开始挖掘
-     * */
-    boolean isStarted(PageLandArea pageLandArea, long nowTime);
 
 }

@@ -20,12 +20,13 @@ public class ControllerAspect {
     private ObjectMapper objectMapper;
 
     @Pointcut("execution(public * com.wxsk.vr.mine.controller.*.*(..))")
-    public void log() {}
+    public void log() {
+    }
 
     @Before("log()")
     public void doBefore(JoinPoint joinPoint) {
-    	try{
-    		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        try {
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = requestAttributes.getRequest();
             //url
             logger.info("url: {}", request.getRequestURL());
@@ -37,11 +38,12 @@ public class ControllerAspect {
             logger.info("class-method: {}", joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
             //参数
             logger.info("args: {}", joinPoint.getArgs());
-    	}catch(Exception e){
-    		 logger.error(e);
-    	}
-        
+        } catch (Exception e) {
+            logger.error(e);
+        }
+
     }
+
     @After("log()")
     public void doAfter() {
     }
@@ -50,8 +52,7 @@ public class ControllerAspect {
     public void afterReturning(Object obj) throws Exception {
         if (obj != null && (obj instanceof JSONResult || obj instanceof com.wxsk.common.json.JSONResult)) {
             logger.info("response: {}", objectMapper.writeValueAsString(obj));
-        }
-        else {
+        } else {
             logger.info("response: {}", obj);
         }
     }

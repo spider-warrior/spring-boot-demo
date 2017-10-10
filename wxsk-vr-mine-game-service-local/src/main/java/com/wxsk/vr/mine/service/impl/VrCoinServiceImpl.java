@@ -1,9 +1,8 @@
 package com.wxsk.vr.mine.service.impl;
 
 import com.wxsk.vr.mine.common.util.AlgorithmUtil;
-import com.wxsk.vr.mine.common.util.AppContext;
-import com.wxsk.vr.mine.config.ApplicationConfig;
-import com.wxsk.vr.mine.config.GameConfig;
+import com.wxsk.vr.mine.properties.ApplicationProperties;
+import com.wxsk.vr.mine.properties.GameProperties;
 import com.wxsk.vr.mine.service.VrCoinService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +12,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,24 +25,25 @@ public class VrCoinServiceImpl implements VrCoinService {
 
     private RedisTemplate<String, String> redisTemplate;
     private ValueOperations<String, String> valueOperations;
-    public VrCoinServiceImpl (RedisTemplate<String, String> redisTemplate) {
+
+    public VrCoinServiceImpl(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
         valueOperations = redisTemplate.opsForValue();
     }
 
     @Autowired
-    private GameConfig gameConfig;
+    private GameProperties gameProperties;
     @Autowired
-    private ApplicationConfig applicationConfig;
+    private ApplicationProperties applicationProperties;
 
     @Override
     public int getMaxVrCoin() {
-        return gameConfig.getVrCoinConfig().getMax();
+        return gameProperties.getVrCoinConfig().getMax();
     }
 
     @Override
-    public int calculateAwardVrCoin(int level) {
-        List<List<Integer>> subtypeRandomConfig = gameConfig.getVrCoinConfig().getSubtypeRandomConfig();
+    public int calculateAwardVrCoin(int level, long now) {
+        List<List<Integer>> subtypeRandomConfig = gameProperties.getVrCoinConfig().getSubtypeRandomConfig();
         //随机可选项
         List<Integer> options = subtypeRandomConfig.get(level);
         if (options == null || options.size() == 0) {
@@ -52,14 +51,14 @@ public class VrCoinServiceImpl implements VrCoinService {
             return 0;
         }
         //for test
-        if (!redisTemplate.hasKey(applicationConfig.getVrCoinRedisKey())) {
-            valueOperations.set(applicationConfig.getVrCoinRedisKey(), String.valueOf(gameConfig.getVrCoinConfig().getMax()));
+        if (!redisTemplate.hasKey(applicationProperties.getVrCoinRedisKey())) {
+            valueOperations.set(applicationProperties.getVrCoinRedisKey(), String.valueOf(gameProperties.getVrCoinConfig().getMax()));
         }
         //掉率比
-        double rate = calculateVRCoinRate();
+        double rate = calculateVRCoinRate(now);
         int index = AlgorithmUtil.randomInt(0, options.size());
-        int awardAmount = rate <= 0 ? 0 : (int)(options.get(index) * rate);
-        long remain = valueOperations.increment(applicationConfig.getVrCoinRedisKey(), -awardAmount);
+        int awardAmount = rate <= 0 ? 0 : (int) (options.get(index) * rate);
+        long remain = valueOperations.increment(applicationProperties.getVrCoinRedisKey(), -awardAmount);
         if (remain < 0) {
             awardAmount = 0;
         }
@@ -68,21 +67,20 @@ public class VrCoinServiceImpl implements VrCoinService {
     }
 
     @Override
-    public long calculateOnlineDayCount() {
-        long now = AppContext.getCurrentRequestTimePoint().getTime();
-        long range = now - gameConfig.getVrCoinConfig().getStartTime();
-        return (range + ONE_DAY_IN_MILLS -1) / ONE_DAY_IN_MILLS;
+    public long calculateOnlineDayCount(long now) {
+        long range = now - gameProperties.getVrCoinConfig().getStartTime();
+        return (range + ONE_DAY_IN_MILLS - 1) / ONE_DAY_IN_MILLS;
     }
 
     @Override
-    public double calculateVRCoinRate() {
+    public double calculateVRCoinRate(long now) {
         //开服天数
-        long dayCount = calculateOnlineDayCount();
+        long dayCount = calculateOnlineDayCount(now);
         //实际总产出
-        long actualProduction = gameConfig.getVrCoinConfig().getMax() - valueOperations.increment(applicationConfig.getVrCoinRedisKey(), 0);
+        long actualProduction = gameProperties.getVrCoinConfig().getMax() - valueOperations.increment(applicationProperties.getVrCoinRedisKey(), 0);
         //预期产出量 = 平均日产出 * 开服天数
-        long predictSum = gameConfig.getVrCoinConfig().getAverageByDay() * dayCount;
+        long predictSum = gameProperties.getVrCoinConfig().getAverageByDay() * dayCount;
         //掉率比 = 今日应产出 / 平均产出
-        return ((double)(predictSum - actualProduction)) / gameConfig.getVrCoinConfig().getAverageByDay();
+        return ((double) (predictSum - actualProduction)) / gameProperties.getVrCoinConfig().getAverageByDay();
     }
 }

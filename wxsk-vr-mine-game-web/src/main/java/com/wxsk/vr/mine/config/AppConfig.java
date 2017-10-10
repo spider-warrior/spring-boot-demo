@@ -4,36 +4,57 @@ import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.AnnotationBean;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wxsk.common.redis.StringRedisClusterUtil;
 import com.wxsk.vr.mine.config.properties.DubboProperties;
 import com.wxsk.vr.mine.controller.aspect.ControllerAspect;
 import com.wxsk.vr.mine.controller.interceptor.UserInterceptor;
-import com.wxsk.vr.mine.controller.json.GameObjectMapper;
+import com.wxsk.vr.mine.helper.AppHelper;
+import com.wxsk.vr.mine.properties.ApplicationProperties;
+import com.wxsk.vr.mine.properties.GameProperties;
+import com.wxsk.vr.mine.ws.MyWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import redis.clients.jedis.JedisCluster;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
-@ComponentScan(
-        basePackages = "com.wxsk.vr.mine"
-)
 @EnableAspectJAutoProxy
-@EnableConfigurationProperties(value = {GameConfig.class, ApplicationConfig.class, MongoProperties.class, DubboProperties.class})
+@EnableConfigurationProperties(value = {GameProperties.class, ApplicationProperties.class, MongoProperties.class, DubboProperties.class})
+@EnableScheduling
+//@EnableWebSocket
 @Configuration
-public class AppConfig extends WebMvcConfigurerAdapter {
+public class AppConfig extends WebMvcConfigurerAdapter implements WebSocketConfigurer {
 
     @Autowired
     private DubboProperties dubboProperties;
     @Autowired
     private UserInterceptor userInterceptor;
+    @Autowired
+    private MyWebSocketHandler handler;
+    @Autowired
+    private com.wxsk.vr.mine.ws.HandShake HandShake;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(handler, "/wx_handshake").addInterceptors(HandShake).setAllowedOrigins("*");
+        registry.addHandler(handler, "/wx_handshake/sockjs").setAllowedOrigins("*").addInterceptors(AppHelper.getBean(com.wxsk.vr.mine.ws.HandShake.class)).withSockJS();
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -70,13 +91,6 @@ public class AppConfig extends WebMvcConfigurerAdapter {
     @Bean
     public ControllerAspect loggingAspect() {
         return new ControllerAspect();
-    }
-
-    @Bean
-    public GameObjectMapper gameObjectMapper() {
-        GameObjectMapper mapper = new GameObjectMapper();
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-        return mapper;
     }
 
     @Bean
@@ -127,4 +141,16 @@ public class AppConfig extends WebMvcConfigurerAdapter {
         return protocolConfig;
     }
 
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        return objectMapper;
+    }
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        MappingJackson2HttpMessageConverter mm = new MappingJackson2HttpMessageConverter();
+        mm.setObjectMapper(objectMapper());
+        converters.add(mm);
+    }
 }

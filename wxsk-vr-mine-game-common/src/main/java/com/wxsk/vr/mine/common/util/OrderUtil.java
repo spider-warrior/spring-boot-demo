@@ -8,33 +8,34 @@ import java.util.Enumeration;
 
 public class OrderUtil {
 
-    public static  int seed = 0;
+    public static int seed = 0;
     private static String localIp = null;
+
     static {
-        setLocalIp() ;
+        setLocalIp();
     }
 
-    public static void setLocalIp(){
+    public static void setLocalIp() {
         try {
-            localIp = getLocalIp() ;
-            localIp = localIp.split("\\.")[3] ;
+            localIp = getLocalIp();
+            localIp = localIp.split("\\.")[3];
             String patternIp = "000";
             DecimalFormat ipFormat = new DecimalFormat(patternIp);
-            localIp = ipFormat.format(Integer.valueOf(localIp)) ;
+            localIp = ipFormat.format(Integer.valueOf(localIp));
         } catch (Exception e) {
-            e.printStackTrace() ;
-            throw new RuntimeException(e) ;
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    public static String getLocalIp(){
+    public static String getLocalIp() {
         StringBuilder ip = new StringBuilder();
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface
-                    .getNetworkInterfaces(); en.hasMoreElements();) {
+                    .getNetworkInterfaces(); en.hasMoreElements(); ) {
                 NetworkInterface intf = en.nextElement();
                 for (Enumeration<InetAddress> enumIpAddr = intf
-                        .getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()
                             && !inetAddress.isLinkLocalAddress()
@@ -46,7 +47,7 @@ public class OrderUtil {
             }
         } catch (SocketException ex) {
         }
-        return ip.toString() ;
+        return ip.toString();
     }
 
     /**
@@ -55,8 +56,8 @@ public class OrderUtil {
      * @param pre
      * @return
      */
-    public synchronized static String createOrderCode(){
-        return createOrderCode(100) ;
+    public synchronized static String createOrderCode() {
+        return createOrderCode(100);
     }
 
     /**
@@ -65,19 +66,19 @@ public class OrderUtil {
      * @param pre
      * @return
      */
-    private synchronized static String createOrderCode(long preOrder){
+    private synchronized static String createOrderCode(long preOrder) {
         String pattern = "00";
         DecimalFormat decimalFormat = new DecimalFormat(pattern);
         String patternSeed = "0000";
         DecimalFormat seedFormat = new DecimalFormat(patternSeed);
-        if(null == localIp || "".equals(localIp)){
-            setLocalIp() ;
+        if (null == localIp || "".equals(localIp)) {
+            setLocalIp();
         }
         return decimalFormat.format(preOrder) + System.currentTimeMillis() + localIp + seedFormat.format(getSeed());
     }
 
-    private synchronized static int getSeed(){
-        if(++seed > 9999){
+    private synchronized static int getSeed() {
+        if (++seed > 9999) {
             seed = 1;
         }
         return seed;

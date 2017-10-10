@@ -1,9 +1,6 @@
 package com.wxsk.vr.mine.model;
 
-import com.wxsk.vr.mine.common.util.DateUtil;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.Date;
 
 /**
  * 地块
@@ -13,33 +10,33 @@ public class LandArea extends BaseModel {
 
     /**
      * 地块类型
-     * */
+     */
     private LandAreaType landAreaType;
 
     /**
      * 一页矿区中所排列的下标位置
-     * */
+     */
     private int index;
 
     /**
      * 挖掘开始时间
-     * */
+     */
     private long startTime;
 
     /**
      * 挖掘结束时间
-     * */
+     */
     private long endTime;
 
     /**
      * 已消耗体力
-     * */
+     */
     private int containEnergy;
 
     /**
-     * 收益通知
+     * 实际收益数量
      * */
-    private boolean informed;
+    private int actualProfitAmount;
 
     public LandAreaType getLandAreaType() {
         return landAreaType;
@@ -81,38 +78,23 @@ public class LandArea extends BaseModel {
         this.containEnergy = containEnergy;
     }
 
-    public boolean isInformed() {
-        return informed;
+    public int getActualProfitAmount() {
+        return actualProfitAmount;
     }
 
-    public void setInformed(boolean informed) {
-        this.informed = informed;
-    }
-    
-    /**
-     * 计算地块开始时间
-     * @param landArea
-     * @return
-     */
-    public static long reckonStartTime(LandArea landArea){
-    	if(landArea == null){
-    		return 0L;
-    	}
-    	if(landArea.landAreaType == null){
-    		return 0L;
-    	}
-    	return landArea.getEndTime() - landArea.landAreaType.getSpendTimeInSecond()*60*1000;
+    public void setActualProfitAmount(int actualProfitAmount) {
+        this.actualProfitAmount = actualProfitAmount;
     }
 
     @Override
     public String toString() {
         return "LandArea{" +
-                "\nlandAreaType=" + landAreaType +
-                "\n, index=" + index +
-                "\n, startTime=" + DateUtil.yyyyMMddHHmmssFormat(new Date(startTime)) +
-                "\n, endTime=" + DateUtil.yyyyMMddHHmmssFormat(new Date(endTime)) +
-                "\n, containEnergy=" + containEnergy +
-                "\n, informed=" + informed +
-                "\n}";
+                "landAreaType=" + landAreaType +
+                ", index=" + index +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", containEnergy=" + containEnergy +
+                ", actualProfitAmount=" + actualProfitAmount +
+                '}';
     }
 }

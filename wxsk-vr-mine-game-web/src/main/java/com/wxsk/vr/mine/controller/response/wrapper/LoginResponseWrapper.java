@@ -3,20 +3,17 @@ package com.wxsk.vr.mine.controller.response.wrapper;
 import com.wxsk.common.exception.BusinessException;
 import com.wxsk.common.json.JSONResult;
 import com.wxsk.passport.model.User;
-import com.wxsk.vr.mine.common.util.AppContext;
-import com.wxsk.vr.mine.controller.response.vo.LandAreaVo;
-import com.wxsk.vr.mine.helper.AppHelper;
+import com.wxsk.vr.mine.controller.util.ResponseUtil;
 import com.wxsk.vr.mine.model.PageLandArea;
 import com.wxsk.vr.mine.model.UserGameData;
 import com.wxsk.vr.mine.service.PageLandAreaService;
 import com.wxsk.vr.mine.service.UserAccountService;
 import com.wxsk.vr.mine.service.UserGameDataService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * 登录结果包装
@@ -34,27 +31,19 @@ public class LoginResponseWrapper {
     private LandAreaVoWrapper landAreaVoWrapper;
     @Autowired
     private AccountVoWrapper accountVoWrapper;
+    @Autowired
+    private UserGameDataVoWrapper userGameDataVoWrapper;
 
-    public JSONResult buildJsonResult(JSONResult jsonResult) throws BusinessException {
-        Map<String, Object> data = jsonResult.getData();
-        if (data == null) {
-            data = new HashMap<>();
-            jsonResult.setData(data);
+    public JSONResult buildJsonResult(JSONResult jsonResult, long now) throws BusinessException {
+        Map<String, Object> data = ResponseUtil.getResultMap();
+        Map<String, Object> jsonResultData = jsonResult.getData();
+        if (jsonResultData != null) {
+            data.putAll(jsonResultData);
         }
-        data.put("systime", AppContext.getCurrentRequestTimePoint());
+        jsonResult.setData(data);
         if (jsonResult.getStatus() == 1) {
-            //用户账户信息
-            data.put("account", accountVoWrapper.buildAccountVo(userAccountService.queryUserAccount((User)data.get("user"))));
-            //用户当前体力
-            UserGameData userGameData = userGameDataService.queryUserGameData((User)data.get("user"));
-            data.put("energy", userGameDataService.queryUserEnergy(userGameData));
-            //第一层矿
-            PageLandArea pageLandArea = pageLandAreaService.queryCurrentLandArea((User)data.get("user"));
-            List<LandAreaVo> landAreaVoList = new ArrayList<>();
-            pageLandArea.forEach(landArea -> landAreaVoList.add(landAreaVoWrapper.buildLandAreaVo(userGameData, landArea)));
-            data.put("landAreas", landAreaVoList);
-            //页码
-            data.put("pageIndex", pageLandArea.getIndex());
+            User user = (User)data.get("user");
+            data.putAll(buildFullLoginResponse(user, now));
         }
         else {
         	String errorCode = jsonResult.getErrorCode();
@@ -64,6 +53,27 @@ public class LoginResponseWrapper {
             jsonResult.setErrorCode(errorCode);
         }
         return jsonResult;
+    }
+
+    public Map<String, Object> buildFullLoginResponse(User user, long now) throws BusinessException {
+        Map<String, Object> data = ResponseUtil.getResultMap();
+        //同步
+        pageLandAreaService.synchronizedPageLandArea(user, now);
+        //用户账户信息
+        data.put("account", accountVoWrapper.buildAccountVo(userAccountService.queryUserAccount(user)));
+        //用户当前体力
+        UserGameData userGameData = userGameDataService.queryUserGameData(user);
+        data.put("energy", userGameDataService.queryUserCurrentEnergy(userGameData, now));
+        //第一层矿
+        PageLandArea pageLandArea = userGameData.getCurrentPageLandArea();
+        data.put("landAreas", landAreaVoWrapper.buildLandAreaVoList(pageLandArea.getLandAreaList(), now));
+        //页码
+        data.put("pageIndex", pageLandArea.getIndex());
+        //用户游戏数据
+        data.put("userGameData", userGameDataVoWrapper.buildUserGameDataVo(userGameData));
+        //user
+        data.put("user", user);
+        return data;
     }
 
 }

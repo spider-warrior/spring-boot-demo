@@ -3,7 +3,6 @@ package com.wxsk.vr.mine.controller.interceptor;
 import com.wxsk.cas.client.interceptor.AccessRequiredInteceptor;
 import com.wxsk.passport.model.User;
 import com.wxsk.vr.mine.common.util.AppContext;
-import com.wxsk.vr.mine.helper.AppHelper;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 

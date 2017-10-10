@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class PageLandAreaVo {
+public class PageLandAreaVo extends BaseVo {
 
     private int pageIndex;
 

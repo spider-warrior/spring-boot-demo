@@ -3,9 +3,6 @@ package com.wxsk.vr.mine.model;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 用户地块
  */

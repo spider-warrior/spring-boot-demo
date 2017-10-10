@@ -2,19 +2,15 @@ package com.wxsk.vr.mine.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.wxsk.cas.client.annotation.AccessRequired;
+import com.wxsk.common.exception.BusinessException;
+import com.wxsk.mine.account.constant.Enums.CoinTypeEnum;
+import com.wxsk.mine.account.model.Account;
+import com.wxsk.mine.account.service.remote.IAccountServiceRemote;
 import com.wxsk.passport.model.User;
-import com.wxsk.vr.account.constant.Enums.CoinTypeEnum;
-import com.wxsk.vr.account.model.Account;
-import com.wxsk.vr.account.service.remote.IAccountServiceRemote;
 import com.wxsk.vr.mine.common.util.AppContext;
 import com.wxsk.vr.mine.common.util.JSONResult;
-import com.wxsk.vr.mine.helper.AppHelper;
-import com.wxsk.vr.mine.service.PageLandAreaService;
-import com.wxsk.vr.mine.service.UserAccountService;
-import com.wxsk.vr.mine.service.UserGameDataService;
-import com.wxsk.vr.mine.service.UserLandAreaService;
+import com.wxsk.vr.mine.service.*;
 import com.wxsk.vr.mine.service.impl.JpushServiceImpl;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +27,17 @@ public class TestController {
     @Autowired
     private UserGameDataService userGameDataService;
     @Autowired
-    private UserLandAreaService userLandAreaService;
-    @Autowired
     private PageLandAreaService pageLandAreaService;
     @Autowired
     private UserAccountService userAccountService;
+    @Autowired
+    private DigRecordService digRecordService;
+    @Autowired
+    private MagicBoxService magicBoxService;
     @Reference(version = "1.0", timeout = 5000)
     private IAccountServiceRemote accountServiceRemote;
     @Autowired
     private JpushServiceImpl jpushServiceImpl;
-    
 
 
     @AccessRequired(respongseType = AccessRequired.RespongseType.JSON)
@@ -55,16 +52,17 @@ public class TestController {
 
     /**
      * 清理用户数据
-     * */
+     */
     @AccessRequired(respongseType = AccessRequired.RespongseType.JSON)
     @RequestMapping(value = "clear_user_data", method = RequestMethod.GET)
-    public Object clearUserData() {
+    public Object clearUserData() throws BusinessException {
         User user = AppContext.getCurrentUser();
         userGameDataService.remove(userGameDataService.queryUserGameData(user));
-        userLandAreaService.remove(userLandAreaService.queryUserLandArea(user));
         pageLandAreaService.removeUserPageLandArea(user);
+        digRecordService.removeUserDigRecord(user);
+        magicBoxService.removeUserMagicBox(user);
         Account account = userAccountService.queryUserAccount(user);
-        for (CoinTypeEnum typeEnum: CoinTypeEnum.values()) {
+        for (CoinTypeEnum typeEnum : CoinTypeEnum.values()) {
             long amount;
             switch (typeEnum) {
                 case DIAMOND: {
@@ -88,10 +86,10 @@ public class TestController {
         logger.info("user data cleared, userId: {}", user.getId());
         return JSONResult.success();
     }
-    
+
     @RequestMapping(value = "test2", method = RequestMethod.GET)
-    public Object test2() {
-    	jpushServiceImpl.sendDigFinished();;
-    	return JSONResult.success();
+    public Object test2() throws BusinessException {
+        jpushServiceImpl.sendDigFinished();
+        return JSONResult.success();
     }
 }

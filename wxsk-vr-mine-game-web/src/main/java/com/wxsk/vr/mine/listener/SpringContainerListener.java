@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 
 @Service
-public class SpringContainerListener implements ApplicationListener<ServletRequestHandledEvent>{
+public class SpringContainerListener implements ApplicationListener<ServletRequestHandledEvent> {
 
     private static final Logger logger = LogManager.getLogger(SpringContainerListener.class);
 

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class AccountVo {
+public class AccountVo extends BaseVo {
 
     @JsonProperty("id")
     private Long id;

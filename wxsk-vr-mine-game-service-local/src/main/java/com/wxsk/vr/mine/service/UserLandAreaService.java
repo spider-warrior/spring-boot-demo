@@ -16,13 +16,13 @@ public interface UserLandAreaService extends BaseService<UserLandArea>{
      * 查询用户地块信息
      * @param user 用户
      * */
-    UserLandArea queryUserLandArea(User user);
+    UserLandArea queryUserLandArea(User user) throws BusinessException;
 
     /**
      * 初始化用户地块数据
      * @param user 用户数据
      * */
-    void initUserLandArea(User user);
+    void initUserLandArea(User user) throws BusinessException;
 
     /**
      * 更系用户地块数据
@@ -70,12 +70,12 @@ public interface UserLandAreaService extends BaseService<UserLandArea>{
     /**
      * 查询当前矿区地块详细信息
      * */
-    LandArea queryCurrentLandAreaByIndex(User user, int index);
+    LandArea queryCurrentLandAreaByIndex(User user, int index) throws BusinessException;
 
     /**
      * 查询下一矿区地块详细信息
      * */
-    LandArea queryNextLandAreaByIndex(User user, int index);
+    LandArea queryNextLandAreaByIndex(User user, int index) throws BusinessException;
 
     /**
      * 翻页
@@ -88,7 +88,7 @@ public interface UserLandAreaService extends BaseService<UserLandArea>{
      * @param user 用户数据
      * @return 矿工位置, -1 未找到矿工位置
      * */
-    int queryWorkerIndex(User user);
+    int queryWorkerIndex(User user) throws BusinessException;
 
     /**
      * 查询矿工位置

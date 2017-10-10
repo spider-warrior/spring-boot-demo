@@ -6,95 +6,100 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class LandAreaVo {
+public class LandAreaVo extends BaseVo {
 
     @JsonProperty(value = "name")
     private String name;
 
     /**
      * 地块大类
-     * */
+     */
     @JsonProperty(value = "type")
     private Byte type;
 
     /**
      * 地块子类
-     * */
+     */
     @JsonProperty("subType")
     private Integer subType;
 
     /**
      * index 矿区中的所在下标
-     * */
+     */
     @JsonProperty("index")
     private Integer index;
 
     /**
      * 结束时间
-     * */
+     */
     @JsonProperty("endTime")
     private Date endTime;
 
+    @JsonProperty("endTimeMills")
+    private Long endTimeMills;
+
     /**
      * 石块状态
-     * 1: 100 - 61 ---> 40%
-     * 2: 60 - 31  ---> 70%
-     * 3: 30 - 0   ---> 100%
-     * */
+     * 1: 100              ----> 0%
+     * 2: 100 > x > 66.6   ----> 33.3%
+     * 3: 66.6 >= x > 33.3 ----> 66.6%
+     * 4: 33.3 >= x > 0    ----> 99.9%
+     * 5: 0                ----> 100%
+     */
     @JsonProperty("status")
     private Byte status;
 
     /**
      * 总消耗体力
-     * */
+     */
     @JsonProperty("consumeEnergy")
     private Integer consumeEnergy;
 
     /**
      * 总消耗体力
-     * */
+     */
     @JsonProperty("containedEnergy")
     private Integer containedEnergy;
 
     /**
      * 消耗时间
-     * */
+     */
     @JsonProperty("consumeTime")
     private String consumeTime;
 
     /**
      * 消耗时间
-     * */
+     */
     @JsonProperty("consumeTimeInSecond")
     private Integer consumeTimeInSecond;
 
     /**
      * 奖励名称
-     * */
+     */
     @JsonProperty("awardName")
     private String awardName;
 
     /**
      * 奖励类型
-     * */
+     */
     @JsonProperty("awardType")
     private Byte awardType;
 
     /**
      * 奖励数量
-     * */
+     */
     @JsonProperty("awardAmount")
     private Double awardAmount;
 
     /**
      * 是否正在挖掘中
-     * */
+     */
     @JsonProperty("ing")
     private boolean ing;
 
     /**
      * 通知状态
-     * */
+     */
     @JsonProperty("informed")
     private boolean informed;
 
@@ -138,6 +143,14 @@ public class LandAreaVo {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public Long getEndTimeMills() {
+        return endTimeMills;
+    }
+
+    public void setEndTimeMills(Long endTimeMills) {
+        this.endTimeMills = endTimeMills;
     }
 
     public Byte getStatus() {

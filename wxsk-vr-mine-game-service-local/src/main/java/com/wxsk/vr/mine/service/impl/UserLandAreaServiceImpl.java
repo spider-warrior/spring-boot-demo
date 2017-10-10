@@ -5,6 +5,7 @@ import com.wxsk.passport.model.User;
 import com.wxsk.vr.mine.common.constant.enums.LandAwardType;
 import com.wxsk.vr.mine.common.util.AppContext;
 import com.wxsk.vr.mine.model.*;
+import com.wxsk.vr.mine.properties.GameProperties;
 import com.wxsk.vr.mine.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.wxsk.vr.mine.common.constant.enums.ServiceErrorCode.CURRENT_PAGE_LAND_AREA_ING;
+import static com.wxsk.vr.mine.common.constant.enums.ServiceErrorCode.ENERGY_NOT_ENOUGH;
 import static com.wxsk.vr.mine.common.constant.enums.ServiceErrorCode.GAME_SERVER_INTERNAL_EXCEPTION;
 
 @Service
@@ -27,6 +29,8 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
 
     private static final Logger logger = LogManager.getLogger(UserLandAreaServiceImpl.class);
 
+    @Autowired
+    private GameProperties gameProperties;
     @Autowired
     private UserGameDataService userGameDataService;
     @Autowired
@@ -41,7 +45,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     private UserAccountService userAccountService;
 
     @Override
-    public UserLandArea queryUserLandArea(User user) {
+    public UserLandArea queryUserLandArea(User user) throws BusinessException {
         Query query = new Query();
         query.addCriteria(new Criteria("userId").is(user.getId()));
         List<UserLandArea> userLandAreaList = queryByParam(query);
@@ -68,14 +72,14 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     }
 
     @Override
-    public void initUserLandArea(User user) {
+    public void initUserLandArea(User user) throws BusinessException {
         UserLandArea userLandArea = new UserLandArea();
         userLandArea.setUserId(user.getId());
-        PageLandArea currentLandAreas = pageLandAreaService.randomLandArea(29, 0);
+        PageLandArea currentLandAreas = pageLandAreaService.randomLandArea(gameProperties.getLandAreaConfig().getSizeOfPageLandArea(), 0);
         currentLandAreas.setUserId(user.getId());
         currentLandAreas.setIndex(1);
         userLandArea.setCurrentLandAreas(currentLandAreas);
-        PageLandArea nextLandAreas = pageLandAreaService.randomLandArea(29, 0);
+        PageLandArea nextLandAreas = pageLandAreaService.randomLandArea(gameProperties.getLandAreaConfig().getSizeOfPageLandArea(), 0);
         nextLandAreas.setUserId(user.getId());
         nextLandAreas.setIndex(2);
         userLandArea.setNextLandAreas(nextLandAreas);
@@ -85,6 +89,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     @Override
     public DigRecord consumeEnergyOnLandAreaList(int energy, long timeMark, PageLandArea... pageLandAreas) throws BusinessException {
         long startTime = timeMark;
+        int countDigArea = 0;
         List<Integer> pageIndexes = new ArrayList<>(pageLandAreas.length);
         out: for (PageLandArea pageLandArea: pageLandAreas) {
             pageIndexes.add(pageLandArea.getIndex());
@@ -93,20 +98,35 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
                 if (energy <= 0) {
                     break out;
                 }
+                int requireEnergy = landAreaService.getLandAreaRequireEnergy(area);
+                if (requireEnergy > energy) {
+                    break out;
+                }
                 int oldContainedEnergy = area.getContainEnergy();
                 boolean dealt = userLandAreaService.consumeEnergyOnLandArea(area, energy, timeMark);
                 if (dealt) {
                     //减能量, 设置结束时间
                     energy -= (area.getContainEnergy() - oldContainedEnergy);
                     timeMark = area.getEndTime() + 1;
+                    countDigArea++;
                 }
             }
+        }
+        //体力不足异常
+        if (countDigArea == 0) {
+            throw new BusinessException(ENERGY_NOT_ENOUGH.msg, null, ENERGY_NOT_ENOUGH.code);
+        }
+        //体力消耗异常
+        if (energy < 0) {
+            logger.error("体力消耗异常, 剩余体力： {}", energy);
+            energy = 0;
         }
         DigRecord digRecord = new DigRecord();
         digRecord.setEndTime(timeMark - 1);
         digRecord.setTotalDigTime(timeMark - startTime);
         digRecord.setInformed(false);
         digRecord.setPageIndex(pageIndexes);
+        digRecord.setRemainEnergy(energy);
         return digRecord;
     }
 
@@ -189,7 +209,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
         Map<Byte, AwardType> awardTypeMapping = new HashMap<>();
         Map<Byte, Long> awardTypeMappingToIncrease = new HashMap<>();
         List<Integer> pageIndexList = digRecord.getPageIndex();
-        long now = AppContext.getCurrentRequestTimePoint().getTime();
+        long now = AppContext.getCurrentRequestTimePoint().orElse(new Date()).getTime();
         long startTime = digRecord.getEndTime() - digRecord.getTotalDigTime();
         long endTime = digRecord.getEndTime();
         if (endTime > now) {
@@ -277,7 +297,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
         }
         Map<Byte, AwardType> awardTypeMapping = new HashMap<>();
         List<Integer> pageIndexList = digRecord.getPageIndex();
-        long now = AppContext.getCurrentRequestTimePoint().getTime();
+        long now = AppContext.getCurrentRequestTimePoint().orElse(new Date()).getTime();
         long startTime = digRecord.getEndTime() - digRecord.getTotalDigTime();
         long endTime = digRecord.getEndTime();
         if (endTime > now) {
@@ -313,14 +333,14 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     }
 
     @Override
-    public LandArea queryCurrentLandAreaByIndex(User user, int index) {
+    public LandArea queryCurrentLandAreaByIndex(User user, int index) throws BusinessException {
         UserLandArea userLandArea = queryUserLandArea(user);
         PageLandArea pageLandArea = userLandArea.getCurrentLandAreas();
         return pageLandArea.getLandAreaList().get(index);
     }
 
     @Override
-    public LandArea queryNextLandAreaByIndex(User user, int index) {
+    public LandArea queryNextLandAreaByIndex(User user, int index) throws BusinessException {
         UserLandArea userLandArea = queryUserLandArea(user);
         PageLandArea pageLandArea = userLandArea.getNextLandAreas();
         return pageLandArea.getLandAreaList().get(index);
@@ -330,7 +350,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     public void turnToNextPage(User user) throws BusinessException {
         UserLandArea userLandArea = queryUserLandArea(user);
         //地块状态检查
-        long now = AppContext.getCurrentRequestTimePoint().getTime();
+        long now = AppContext.getCurrentRequestTimePoint().orElse(new Date()).getTime();
         PageLandArea pageLandArea = userLandArea.getCurrentLandAreas();
         for (LandArea landArea: pageLandArea) {
             if (landArea.getEndTime() == 0 || landAreaService.getLandAreaRequireEnergy(landArea) > 0 || landArea.getEndTime() > now) {
@@ -338,7 +358,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
             }
         }
         userLandArea.setCurrentLandAreas(userLandArea.getNextLandAreas());
-        PageLandArea nextPageLandArea = pageLandAreaService.randomLandArea(29, 0);
+        PageLandArea nextPageLandArea = pageLandAreaService.randomLandArea(gameProperties.getLandAreaConfig().getSizeOfPageLandArea(), 0);
         nextPageLandArea.setUserId(user.getId());
         nextPageLandArea.setIndex(userLandArea.getCurrentLandAreas().getIndex() + 1);
         userLandArea.setNextLandAreas(nextPageLandArea);
@@ -347,7 +367,7 @@ public class UserLandAreaServiceImpl extends BaseServiceImpl<UserLandArea> imple
     }
 
     @Override
-    public int queryWorkerIndex(User user) {
+    public int queryWorkerIndex(User user) throws BusinessException {
         UserGameData userGameData = userGameDataService.queryUserGameData(user);
         UserLandArea userLandArea = queryUserLandArea(user);
         DigRecord digRecord = userGameData.getDigRecord();

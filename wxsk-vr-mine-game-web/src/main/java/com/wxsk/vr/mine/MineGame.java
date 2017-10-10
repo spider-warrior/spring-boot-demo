@@ -4,10 +4,7 @@ import com.wxsk.vr.mine.common.constant.MineConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
@@ -18,10 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@ComponentScan
-@EnableAutoConfiguration
-@EnableConfigurationProperties
-@SpringBootConfiguration
+@SpringBootApplication
 public class MineGame {
 
     private static final Logger logger = LogManager.getLogger(MineGame.class);

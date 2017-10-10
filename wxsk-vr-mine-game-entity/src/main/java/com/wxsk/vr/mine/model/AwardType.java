@@ -6,26 +6,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 奖励类型
  */
 @Document
-public class AwardType implements Cloneable {
+public class AwardType extends BaseModel implements Cloneable {
 
     /**
      * 奖励类型值
-     * */
+     */
     private byte value;
 
     /**
      * 奖励名称
-     * */
+     */
     private String name;
 
     /**
      * 奖励数量
-     * */
+     */
     private int amount;
 
     /**
      * 级别
-     * */
+     */
     private byte level;
 
 
@@ -64,5 +64,15 @@ public class AwardType implements Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    @Override
+    public String toString() {
+        return "AwardType{" +
+            "value=" + value +
+            ", name='" + name + '\'' +
+            ", amount=" + amount +
+            ", level=" + level +
+            '}';
     }
 }

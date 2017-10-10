@@ -15,25 +15,20 @@ import java.util.List;
         @CompoundIndex(name = "page_land_area_userId_pageIndex_index", def = "{'userId': 1, 'index': 1}")
 })
 @Document
-public class PageLandArea extends BaseModel implements Iterable<LandArea>{
+public class PageLandArea extends BaseModel implements Iterable<LandArea> {
 
     /**
      * 用户id
-     * */
+     */
     private Long userId;
     /**
      * 页面页码
-     * */
+     */
     private int index;
-    
+
     /**
-     * 刷新次数
-     * */
-    private int flushCnt;
-    
-	/**
      * 页面数据
-     * */
+     */
     private List<LandArea> landAreaList = new ArrayList<>();
 
     public Long getUserId() {
@@ -64,20 +59,6 @@ public class PageLandArea extends BaseModel implements Iterable<LandArea>{
     public Iterator<LandArea> iterator() {
         return landAreaList.iterator();
     }
-    
-    /**
-     * 获取刷新次数
-     * */
-    public int getFlushCnt() {
-		return flushCnt;
-	}
-    
-    /**
-     * 设置刷新次数
-     * */
-	public void setFlushCnt(int flushCnt) {
-		this.flushCnt = flushCnt;
-	}
 
 }
 
